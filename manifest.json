@@ -1,0 +1,24 @@
+{
+  "name": "Scripts Launcher",
+  "short_name": "Scripts",
+  "description": "Quick access to your web app scripts and tools",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f5f0",
+  "theme_color": "#f5f5f0",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

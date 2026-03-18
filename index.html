@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f5f5f0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Scripts" />
+  <title>Scripts</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f5f0;
+      --surface: #ffffff;
+      --border: #e8e8e2;
+      --text: #1a1a18;
+      --muted: #9a9a94;
+      --accent: #2a2a28;
+      --tag-bg: #eeeeea;
+      --hover: #f0f0ec;
+      --radius: 14px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 80px;
+    }
+
+    header {
+      padding: 52px 24px 24px;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+
+    .count {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    input[type="search"] {
+      width: 100%;
+      padding: 12px 16px 12px 42px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    input[type="search"]:focus {
+      border-color: var(--accent);
+    }
+
+    input[type="search"]::placeholder { color: var(--muted); }
+
+    .tags {
+      display: flex;
+      gap: 8px;
+      padding: 0 24px 20px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tags::-webkit-scrollbar { display: none; }
+
+    .tag {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--tag-bg);
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      border: 1.5px solid transparent;
+      transition: all 0.15s;
+      user-select: none;
+    }
+
+    .tag.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .grid {
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: var(--shadow);
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .card:active {
+      transform: scale(0.985);
+      background: var(--hover);
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      background: var(--tag-bg);
+    }
+
+    .card-body { flex: 1; min-width: 0; }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-tag {
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      color: var(--muted);
+      background: var(--tag-bg);
+      padding: 3px 8px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    /* Edit modal */
+    .fab {
+      position: fixed;
+      bottom: 28px;
+      right: 24px;
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      transition: transform 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .fab:active { transform: scale(0.93); }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 100;
+      backdrop-filter: blur(2px);
+      align-items: flex-end;
+    }
+    .overlay.open { display: flex; }
+
+    .sheet {
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      padding: 24px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      animation: slideUp 0.25s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .sheet h2 {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .field input:focus, .field select:focus { border-color: var(--accent); }
+
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+
+    .btn {
+      flex: 1;
+      padding: 13px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn:active { opacity: 0.75; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-ghost { background: var(--tag-bg); color: var(--text); }
+    .btn-danger { background: #fee2e2; color: #b91c1c; }
+
+    .edit-list { margin-bottom: 16px; }
+    .edit-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .edit-item-name { font-weight: 500; }
+    .edit-item-actions { display: flex; gap: 8px; }
+    .icon-btn {
+      background: var(--tag-bg);
+      border: none;
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .no-scripts-hint {
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      text-align: center;
+      margin: 0 16px;
+    }
+    .no-scripts-hint p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .no-scripts-hint strong { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>Scripts</h1>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="search-wrap">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="search" placeholder="Search scripts…" id="search" autocomplete="off" />
+  </div>
+</header>
+
+<div class="tags" id="tags"></div>
+<div class="grid" id="grid"></div>
+
+<button class="fab" id="fabBtn" title="Manage scripts">
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+    <path d="M12 5v14M5 12h14"/>
+  </svg>
+</button>
+
+<!-- Add/Edit Sheet -->
+<div class="overlay" id="overlay">
+  <div class="sheet" id="sheet">
+    <h2 id="sheetTitle">Add Script</h2>
+
+    <div id="manageView">
+      <div class="edit-list" id="editList"></div>
+      <button class="btn btn-primary" style="width:100%" id="showAddBtn">+ Add New Script</button>
+    </div>
+
+    <div id="addView" style="display:none">
+      <div class="field">
+        <label>Name</label>
+        <input type="text" id="inp-name" placeholder="My Tool" />
+      </div>
+      <div class="field">
+        <label>URL</label>
+        <input type="url" id="inp-url" placeholder="https://script.google.com/…" />
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <input type="text" id="inp-desc" placeholder="What does it do?" />
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <input type="text" id="inp-cat" placeholder="e.g. Reports, Admin, Finance" />
+      </div>
+      <div class="field">
+        <label>Icon (emoji)</label>
+        <input type="text" id="inp-icon" placeholder="📊" maxlength="2" />
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="cancelAddBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'scripts_v1';
+  let scripts = [];
+  let editingId = null;
+  let activeTag = 'All';
+
+  const defaultScripts = [
+    { id: 1, name: 'Sample Report', url: 'https://example.com', desc: 'Generate weekly report', category: 'Reports', icon: '📊' },
+    { id: 2, name: 'Invoice Tool', url: 'https://example.com', desc: 'Create and send invoices', category: 'Finance', icon: '🧾' },
+    { id: 3, name: 'Data Importer', url: 'https://example.com', desc: 'Import CSV data to Sheets', category: 'Admin', icon: '📥' },
+  ];
+
+  function load() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    scripts = raw ? JSON.parse(raw) : defaultScripts;
+  }
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(scripts));
+  }
+
+  function getCategories() {
+    const cats = [...new Set(scripts.map(s => s.category).filter(Boolean))];
+    return ['All', ...cats];
+  }
+
+  function renderTags() {
+    const cats = getCategories();
+    const el = document.getElementById('tags');
+    el.innerHTML = cats.map(c => `
+      <span class="tag ${c === activeTag ? 'active' : ''}" data-tag="${c}">${c}</span>
+    `).join('');
+    el.querySelectorAll('.tag').forEach(t => {
+      t.addEventListener('click', () => { activeTag = t.dataset.tag; renderTags(); renderGrid(); });
+    });
+  }
+
+  function filtered() {
+    const q = document.getElementById('search').value.toLowerCase();
+    return scripts.filter(s => {
+      const matchTag = activeTag === 'All' || s.category === activeTag;
+      const matchQ = !q || s.name.toLowerCase().includes(q) || (s.desc||'').toLowerCase().includes(q) || (s.category||'').toLowerCase().includes(q);
+      return matchTag && matchQ;
+    });
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('grid');
+    const items = filtered();
+    document.getElementById('count').textContent = `${items.length} script${items.length !== 1 ? 's' : ''}`;
+
+    if (scripts.length === 0) {
+      grid.innerHTML = `<div class="no-scripts-hint"><p>No scripts yet.<br><strong>Tap + to add your first web app link.</strong><br><br>You can add any URL — Google Apps Script, internal tools, anything.</p></div>`;
+      return;
+    }
+
+    if (items.length === 0) {
+      grid.innerHTML = `<div class="empty">No results found</div>`;
+      return;
+    }
+
+    grid.innerHTML = items.map(s => `
+      <a class="card" href="${s.url}" target="_blank" rel="noopener">
+        <div class="card-icon">${s.icon || '🔗'}</div>
+        <div class="card-body">
+          <div class="card-title">${s.name}</div>
+          <div class="card-desc">${s.desc || s.url}</div>
+        </div>
+        ${s.category ? `<span class="card-tag">${s.category}</span>` : ''}
+      </a>
+    `).join('');
+  }
+
+  function renderEditList() {
+    const el = document.getElementById('editList');
+    if (scripts.length === 0) { el.innerHTML = '<p style="color:var(--muted);font-size:14px;margin-bottom:16px">No scripts yet.</p>'; return; }
+    el.innerHTML = scripts.map(s => `
+      <div class="edit-item">
+        <div>
+          <div class="edit-item-name">${s.icon || '🔗'} ${s.name}</div>
+          <div style="font-size:12px;color:var(--muted)">${s.category || ''}</div>
+        </div>
+        <div class="edit-item-actions">
+          <button class="icon-btn" data-edit="${s.id}">✏️</button>
+          <button class="icon-btn" data-del="${s.id}">🗑️</button>
+        </div>
+      </div>
+    `).join('');
+    el.querySelectorAll('[data-del]').forEach(btn => {
+      btn.addEventListener('click', () => { scripts = scripts.filter(s => s.id != btn.dataset.del); save(); renderEditList(); renderGrid(); renderTags(); });
+    });
+    el.querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const s = scripts.find(x => x.id == btn.dataset.edit);
+        if (!s) return;
+        editingId = s.id;
+        document.getElementById('inp-name').value = s.name;
+        document.getElementById('inp-url').value = s.url;
+        document.getElementById('inp-desc').value = s.desc || '';
+        document.getElementById('inp-cat').value = s.category || '';
+        document.getElementById('inp-icon').value = s.icon || '';
+        document.getElementById('sheetTitle').textContent = 'Edit Script';
+        document.getElementById('manageView').style.display = 'none';
+        document.getElementById('addView').style.display = 'block';
+      });
+    });
+  }
+
+  // FAB / overlay
+  document.getElementById('fabBtn').addEventListener('click', () => {
+    editingId = null;
+    document.getElementById('sheetTitle').textContent = 'Manage Scripts';
+    document.getElementById('manageView').style.display = 'block';
+    document.getElementById('addView').style.display = 'none';
+    clearForm();
+    renderEditList();
+    document.getElementById('overlay').classList.add('open');
+  });
+
+  document.getElementById('overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('overlay')) document.getElementById('overlay').classList.remove('open');
+  });
+
+  document.getElementById('showAddBtn').addEventListener('click', () => {
+    editingId = null;
+    clearForm();
+    document.getElementById('sheetTitle').textContent = 'Add Script';
+    document.getElementById('manageView').style.display = 'none';
+    document.getElementById('addView').style.display = 'block';
+  });
+
+  document.getElementById('cancelAddBtn').addEventListener('click', () => {
+    if (editingId) {
+      document.getElementById('sheetTitle').textContent = 'Manage Scripts';
+      document.getElementById('manageView').style.display = 'block';
+      document.getElementById('addView').style.display = 'none';
+    } else {
+      document.getElementById('overlay').classList.remove('open');
+    }
+  });
+
+  function clearForm() {
+    ['name','url','desc','cat','icon'].forEach(f => document.getElementById('inp-'+f).value = '');
+  }
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    const name = document.getElementById('inp-name').value.trim();
+    const url = document.getElementById('inp-url').value.trim();
+    if (!name || !url) { alert('Name and URL are required.'); return; }
+    const entry = {
+      id: editingId || Date.now(),
+      name,
+      url,
+      desc: document.getElementById('inp-desc').value.trim(),
+      category: document.getElementById('inp-cat').value.trim(),
+      icon: document.getElementById('inp-icon').value.trim() || '🔗',
+    };
+    if (editingId) {
+      scripts = scripts.map(s => s.id === editingId ? entry : s);
+    } else {
+      scripts.push(entry);
+    }
+    save(); clearForm(); editingId = null;
+    document.getElementById('sheetTitle').textContent = 'Manage Scripts';
+    document.getElementById('manageView').style.display = 'block';
+    document.getElementById('addView').style.display = 'none';
+    renderEditList(); renderGrid(); renderTags();
+  });
+
+  document.getElementById('search').addEventListener('input', renderGrid);
+
+  load(); renderTags(); renderGrid();
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>
